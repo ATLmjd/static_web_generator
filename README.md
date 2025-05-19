@@ -1,1 +1,1 @@
-# static_web_generator
+# Static Web Generator
