@@ -1,6 +1,7 @@
-from textnode import TextNode,TextType
-from htmlnode import HTMLNode, ParentNode, LeafNode
+from textnode import TextNode, TextType
+from htmlnode import HTMLNode
 import re
+
 
 def text_node_to_html_node(text_node):
     match(text_node.text_type):
@@ -52,10 +53,5 @@ def extract_markdown_links(text):
     matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
     return matches
 
-def main():
-    test_object = TextNode("This is some anchor text", TextType.LINK, "https://www.boot.dev")
-    print("=== Test output ===")
-    print(test_object) 
-
-if __name__ == "__main__":
-    main()
+def split_nodes_image(old_nodes):
+    for original_text in old_nodes:
