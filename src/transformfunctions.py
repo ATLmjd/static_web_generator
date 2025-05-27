@@ -1,5 +1,5 @@
 from textnode import TextNode, TextType, BlockType
-from htmlnode import HTMLNode
+from htmlnode import HTMLNode, ParentNode, LeafNode
 import re
 
 
@@ -132,3 +132,47 @@ def block_to_block_type(block):
         return BlockType.ORDEREDLIST
     return BlockType.PARAGRAPH
 
+def text_to_leaf_nodes(text):
+    leaf_node_list = []
+    tnode_list = text_to_textnodes(text)
+    for textnode in tnode_list:
+        leaf_node_list.append(text_node_to_html_node(textnode))
+    return leaf_node_list
+
+
+
+def block_to_html_node(block,block_type):
+    match block_type:
+        case BlockType.PARAGRAPH:
+            return ParentNode("P",text_to_leaf_nodes(block))
+        case BlockType.HEADING:
+            count = 1
+            for i in range(1,len(block)):
+                if block[i] == "#":
+                    count +=1
+                else:
+                    break
+            return LeafNode(f"h{count}", block.lstrip("#"))
+        case BlockType.CODE:
+            return ParentNode("pre", [LeafNode("code", block)])
+        case BlockType.QUOTE:
+            return LeafNode("blockquote", block)
+        case BlockType.UNORDEREDLIST:
+            child_node = []
+            for line in block.split('\n'):
+                child_node.append(LeafNode("li", block.lstrip("- ")))
+            return ParentNode("ul", child_node)
+        case BlockType.ORDEREDLIST:
+            child_node = []
+            for line in block.split('\n'):
+                child_node.append(LeafNode("li", block.lstrip("1234567890. ")))
+            return ParentNode("ol", child_node)
+
+
+def markdown_to_html_node(markdown):
+    working_blocks = markdown_to_blocks(markdown)
+    parent_node = ParentNode("div", [])
+    for block in working_blocks:
+        block_type = block_to_block_type(block)
+        parent_node.children.append(block_to_html_node(block, block_type))
+    return parent_node

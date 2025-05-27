@@ -52,7 +52,7 @@ class ParentNode(HTMLNode):
     
     def to_html(self):
         if self.tag == None:
-            raise ValueError("no tage")
+            raise ValueError("no tag")
         if self.children == None:
             raise ValueError("no children")
         html_string = f"<{self.tag}" + self.props_to_html() + ">"
