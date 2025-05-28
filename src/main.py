@@ -1,61 +1,27 @@
 from textnode import TextNode,TextType
 from htmlnode import HTMLNode, ParentNode, LeafNode
-import re
+import shutil
+import os
 
-def text_node_to_html_node(text_node):
-    match(text_node.text_type):
-        case TextType.TEXT:
-            return LeafNode(None, text_node.text)
-        case TextType.BOLD:
-            return LeafNode("b", text_node.text)
-        case TextType.ITALIC:
-            return LeafNode("i", text_node.text)
-        case TextType.CODE:
-            return LeafNode("code", text_node.text,  {})
-        case TextType.LINK:
-            return LeafNode("a", text_node.text,{
-                "href": f"{text_node.url}"
-            } )
-        case TextType.IMAGE:
-            return LeafNode("img", text_node.text,{
-                "href": f"{text_node.url}",
-                "alt": f"{text_node.text}"
-            })
-        case _:
-            raise ValueError("invalid type")
 
-def split_nodes_delimiter(old_nodes, delimiter, text_type):
-    new_nodes = []
-    for node in old_nodes:
-        if node.text_type != TextType.TEXT:
-            new_nodes.append(node)
-        mid_list = node.text.split(delimiter)
-        if len(mid_list) % 2 == 0:
-            raise Exception("unmatched delimiter")
-        flag = True
-        for substring in mid_list:
-            if flag:
-                if substring != '':
-                    new_nodes.append(TextNode(substring, TextType.TEXT))
-            else:
-                if substring != '':
-                    new_nodes.append(TextNode(substring, text_type))
-            flag = not flag
-    return new_nodes
+def copy_to_public(source, dest):
+    for file in os.listdir(source):
+        if os.path.isfile(source+"/"+file):
+            shutil.copy(source+"/"+file, dest)
+            print(f"copying {file} to {dest}")
+        else:
+            new_dest = os.path.join(dest, file)
+            new_source = os.path.join(source, file)
+            os.mkdir(new_dest)
+            copy_to_public(new_source, new_dest)
 
-def extract_markdown_images(text):
-    matches = re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)"
-, text)
-    return matches
-
-def extract_markdown_links(text):
-    matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
-    return matches
 
 def main():
-    test_object = TextNode("This is some anchor text", TextType.LINK, "https://www.boot.dev")
-    print("=== Test output ===")
-    print(test_object) 
+    if os.path.exists("public"):
+        shutil.rmtree("public")
+    if not os.path.exists("puclic"):
+        os.mkdir("public")
+    copy_to_public("static", "public")
 
 if __name__ == "__main__":
     main()
