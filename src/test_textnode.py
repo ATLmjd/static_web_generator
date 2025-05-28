@@ -1,7 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType, BlockType
-from transformfunctions import split_nodes_delimiter, extract_markdown_images, split_nodes_image, split_nodes_link, text_to_textnodes, markdown_to_blocks, block_to_block_type
+from transformfunctions import split_nodes_delimiter, extract_markdown_images, split_nodes_image, split_nodes_link, text_to_textnodes, markdown_to_blocks, block_to_block_type, markdown_to_html_node
 
 
 class TestTextNode(unittest.TestCase):

@@ -134,7 +134,10 @@ def block_to_block_type(block):
 
 def text_to_leaf_nodes(text):
     leaf_node_list = []
-    tnode_list = text_to_textnodes(text)
+    tnode_list = []
+    #for line in text.split('\n'):
+    #    tnode_list.extend(text_to_textnodes(line))
+    tnode_list.extend(text_to_textnodes(" ".join(text.split('\n'))))
     for textnode in tnode_list:
         leaf_node_list.append(text_node_to_html_node(textnode))
     return leaf_node_list
@@ -144,7 +147,8 @@ def text_to_leaf_nodes(text):
 def block_to_html_node(block,block_type):
     match block_type:
         case BlockType.PARAGRAPH:
-            return ParentNode("P",text_to_leaf_nodes(block))
+            if block != "":
+                return ParentNode("p",text_to_leaf_nodes(block))
         case BlockType.HEADING:
             count = 1
             for i in range(1,len(block)):
@@ -154,7 +158,7 @@ def block_to_html_node(block,block_type):
                     break
             return LeafNode(f"h{count}", block.lstrip("#"))
         case BlockType.CODE:
-            return ParentNode("pre", [LeafNode("code", block)])
+            return ParentNode("pre", [LeafNode("code", block.removeprefix("```\n").removesuffix("```"))])
         case BlockType.QUOTE:
             return LeafNode("blockquote", block)
         case BlockType.UNORDEREDLIST:
@@ -171,8 +175,10 @@ def block_to_html_node(block,block_type):
 
 def markdown_to_html_node(markdown):
     working_blocks = markdown_to_blocks(markdown)
-    parent_node = ParentNode("div", [])
+    child_blocks = []
     for block in working_blocks:
+        if block == "":
+            continue
         block_type = block_to_block_type(block)
-        parent_node.children.append(block_to_html_node(block, block_type))
-    return parent_node
+        child_blocks.append(block_to_html_node(block, block_type))
+    return ParentNode("div", child_blocks)
