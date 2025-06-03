@@ -1,1 +1,1 @@
-python3 src/main.py "/ATLmjd/"
+python3 src/main.py "/static_web_generator/"
