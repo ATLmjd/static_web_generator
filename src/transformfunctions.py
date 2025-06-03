@@ -19,7 +19,7 @@ def text_node_to_html_node(text_node):
             } )
         case TextType.IMAGE:
             return LeafNode("img", text_node.text,{
-                "href": f"{text_node.url}",
+                "src": f"{text_node.url}",
                 "alt": f"{text_node.text}"
             })
         case _:
@@ -156,20 +156,24 @@ def block_to_html_node(block,block_type):
                     count +=1
                 else:
                     break
-            return LeafNode(f"h{count}", block.lstrip("#"))
+            return LeafNode(f"h{count}", block.lstrip("# "))
         case BlockType.CODE:
             return ParentNode("pre", [LeafNode("code", block.removeprefix("```\n").removesuffix("```"))])
         case BlockType.QUOTE:
-            return LeafNode("blockquote", block)
+            lines = []
+            for line in block.split('\n'):
+                lines.append(line.lstrip("> "))
+            string = "\n".join(lines)
+            return LeafNode("blockquote", string)
         case BlockType.UNORDEREDLIST:
             child_node = []
             for line in block.split('\n'):
-                child_node.append(LeafNode("li", block.lstrip("- ")))
+                child_node.append(ParentNode("li", text_to_leaf_nodes(line.lstrip("- "))))
             return ParentNode("ul", child_node)
         case BlockType.ORDEREDLIST:
             child_node = []
             for line in block.split('\n'):
-                child_node.append(LeafNode("li", block.lstrip("1234567890. ")))
+                child_node.append(ParentNode("li", text_to_leaf_nodes(line.lstrip("1234567890. "))))
             return ParentNode("ol", child_node)
 
 
@@ -182,3 +186,26 @@ def markdown_to_html_node(markdown):
         block_type = block_to_block_type(block)
         child_blocks.append(block_to_html_node(block, block_type))
     return ParentNode("div", child_blocks)
+
+def extract_title(markdown):
+    blocks = markdown_to_blocks(markdown)
+    for block in blocks:
+        if block.startswith("# "):
+            block = block.removeprefix("# ")
+            block = block.rstrip()
+            block = block.lstrip()
+            return block
+
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}\n")
+    with open(from_path) as fh:
+        content_md = fh.read()
+    with open(template_path) as fh:
+        template_html = fh.read()
+    content_node = markdown_to_html_node(content_md)
+    content_html = content_node.to_html()
+    title = extract_title(content_md)
+    updated_html = template_html.replace("{{ Title }}", title).replace("{{ Content }}", content_html)
+    with open(dest_path, 'w', encoding="utf-8") as fh:
+        fh.write(updated_html)
+    

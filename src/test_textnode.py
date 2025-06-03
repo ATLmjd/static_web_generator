@@ -1,8 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType, BlockType
-from transformfunctions import split_nodes_delimiter, extract_markdown_images, split_nodes_image, split_nodes_link, text_to_textnodes, markdown_to_blocks, block_to_block_type, markdown_to_html_node
-
+from transformfunctions import *
 
 class TestTextNode(unittest.TestCase):
     def test_eq(self):
@@ -171,5 +170,17 @@ the **same** even with inline stuff
             "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
         )
     
+    def test_extract_title(self):
+        md = """
+Some text
+Then some more
+
+# Title
+
+## non-title 
+"""
+        title = extract_title(md)
+        self.assertEqual(title, "Title")
+
 if __name__ == "__main__":
     unittest.main()
